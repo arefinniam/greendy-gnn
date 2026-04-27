@@ -1,0 +1,25 @@
+{
+  "description": "GreenDyGNN offline simulator calibration parameters reported in the paper.",
+  "calibration_protocol": {
+    "rpc_delay_sweep_ms": [0, 2, 4, 6, 8],
+    "payload_bytes_range": [1000, 10000000],
+    "window_sweep": {
+      "min": 1,
+      "max": 128,
+      "step": 1
+    },
+    "power_baseline": "clean 5-epoch run measured with NVML and Intel RAPL",
+    "expected_collection_time_min": 15
+  },
+  "rpc_cost_model": {
+    "equation": "T_rpc(N, delta) = alpha_rpc + beta * N * F_b + gamma_c * N * F_b * delta",
+    "alpha_rpc_ms": 4.67,
+    "beta_s_per_byte": 1.4e-9,
+    "gamma_c_s_per_byte_per_ms": 2.01e-10,
+    "r_squared": 0.75
+  },
+  "notes": [
+    "These values are the calibrated coefficients used for the simulator validation reported in Figure 8.",
+    "The artifact trainer also performs an online two-epoch warmup to estimate live fetch and step-time baselines before enabling adaptation."
+  ]
+}

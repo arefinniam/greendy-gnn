@@ -1,0 +1,8 @@
+# One cluster node per line. Copy these addresses to ip_config.txt and replace
+# them with your cluster's internal IPs before running the benchmark.
+# Line 1 is the coordinator/server. Lines 2-4 are non-coordinator nodes that
+# receive congestion injection when --with-congestion is enabled.
+192.0.2.1
+192.0.2.2
+192.0.2.3
+192.0.2.4

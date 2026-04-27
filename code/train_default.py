@@ -114,7 +114,7 @@ if __name__ == "__main__":
         ("--graph_name", str, None), ("--ip_config", str, None),
         ("--part_config", str, None), ("--n_classes", int, 0),
         ("--backend", str, "gloo"), ("--num_gpus", int, 1),
-        ("--num_epochs", int, 10), ("--num_hidden", int, 16),
+        ("--num_epochs", int, 30), ("--num_hidden", int, 16),
         ("--num_layers", int, 2), ("--fan_out", str, "10,25"),
         ("--batch_size", int, 1000), ("--log_every", int, 20),
         ("--lr", float, 0.003), ("--dropout", float, 0.5),

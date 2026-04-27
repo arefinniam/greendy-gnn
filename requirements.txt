@@ -1,0 +1,5 @@
+torch==2.0.1
+dgl==1.1.2
+numpy==1.24.4
+pynvml==11.5.0
+matplotlib==3.7.5
