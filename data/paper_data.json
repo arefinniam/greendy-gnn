@@ -1,0 +1,84 @@
+{
+  "description": "All measurements used in the GreenDyGNN paper figures and tables. 4-node Chameleon Cloud cluster, 30 epochs per run, 15-25 ms time-varying congestion. Method key 'GreenDyGNN' is the proposed system; 'RapidGNN', 'BGL', 'Default DGL' are baselines.",
+  "units": {"gpu": "Joules", "cpu": "Joules", "total": "Joules", "et": "seconds/epoch", "clean_total": "kJ", "ablation_total": "kJ"},
+  "congestion": {
+    "B1000": {
+      "reddit": {
+        "Default DGL": {"gpu": 41198.9, "cpu": 331223.5, "total": 372422.4, "et": 9.20},
+        "BGL":         {"gpu": 38200.0, "cpu": 288396.7, "total": 326596.7, "et": 9.68},
+        "RapidGNN":    {"gpu": 13100.0, "cpu": 267000.0, "total": 280100.0, "et": 2.75},
+        "GreenDyGNN":  {"gpu": 12944.5, "cpu": 199667.9, "total": 212612.4, "et": 2.68}
+      },
+      "ogbn-products": {
+        "Default DGL": {"gpu": 20683.7, "cpu": 273155.4, "total": 293839.0, "et": 4.26},
+        "BGL":         {"gpu": 16281.3, "cpu": 219537.1, "total": 235818.5, "et": 3.98},
+        "RapidGNN":    {"gpu": 13300.0, "cpu": 215500.0, "total": 228800.0, "et": 3.13},
+        "GreenDyGNN":  {"gpu": 13054.6, "cpu": 202334.8, "total": 215389.4, "et": 2.97}
+      },
+      "ogbn-papers100M": {
+        "Default DGL": {"gpu": 89471.2, "cpu": 395468.5, "total": 484939.7, "et": 15.78},
+        "BGL":         {"gpu": 53373.4, "cpu": 272957.2, "total": 326330.5, "et": 13.35},
+        "RapidGNN":    {"gpu": 44800.0, "cpu": 387200.0, "total": 432000.0, "et": 12.50},
+        "GreenDyGNN":  {"gpu": 43191.1, "cpu": 299879.0, "total": 343070.2, "et": 10.24}
+      }
+    },
+    "B2000": {
+      "reddit": {
+        "Default DGL": {"gpu": 30199.1, "cpu": 296560.9, "total": 326760.0, "et": 6.84},
+        "BGL":         {"gpu": 29423.8, "cpu": 248566.2, "total": 277990.0, "et": 7.47},
+        "RapidGNN":    {"gpu":  9000.0, "cpu": 230000.0, "total": 239000.0, "et": 1.90},
+        "GreenDyGNN":  {"gpu":  8783.5, "cpu": 180612.9, "total": 189396.5, "et": 1.77}
+      },
+      "ogbn-products": {
+        "Default DGL": {"gpu": 19238.5, "cpu": 265081.5, "total": 284320.0, "et": 3.80},
+        "BGL":         {"gpu": 14537.4, "cpu": 204220.8, "total": 218758.2, "et": 3.58},
+        "RapidGNN":    {"gpu": 12200.0, "cpu": 200800.0, "total": 213000.0, "et": 2.90},
+        "GreenDyGNN":  {"gpu": 12035.0, "cpu": 191843.3, "total": 203878.4, "et": 2.77}
+      },
+      "ogbn-papers100M": {
+        "Default DGL": {"gpu": 82634.7, "cpu": 369558.8, "total": 452193.5, "et": 12.66},
+        "BGL":         {"gpu": 44593.8, "cpu": 298087.1, "total": 342680.9, "et": 11.08},
+        "RapidGNN":    {"gpu": 39200.0, "cpu": 341200.0, "total": 380400.0, "et": 10.60},
+        "GreenDyGNN":  {"gpu": 37982.0, "cpu": 269239.7, "total": 307221.7, "et":  8.95}
+      }
+    },
+    "B3000": {
+      "reddit": {
+        "Default DGL": {"gpu": 25837.1, "cpu": 281909.2, "total": 307746.3, "et": 5.67},
+        "BGL":         {"gpu": 22791.8, "cpu": 228317.7, "total": 251109.5, "et": 5.77},
+        "RapidGNN":    {"gpu":  7800.0, "cpu": 220200.0, "total": 228000.0, "et": 1.72},
+        "GreenDyGNN":  {"gpu":  7590.0, "cpu": 177518.1, "total": 185108.1, "et": 1.62}
+      },
+      "ogbn-products": {
+        "Default DGL": {"gpu": 16170.5, "cpu": 256387.3, "total": 272557.8, "et": 3.20},
+        "BGL":         {"gpu": 13208.2, "cpu": 200209.8, "total": 213418.0, "et": 3.25},
+        "RapidGNN":    {"gpu": 10100.0, "cpu": 196900.0, "total": 207000.0, "et": 2.40},
+        "GreenDyGNN":  {"gpu": 10261.7, "cpu": 186074.3, "total": 196336.0, "et": 2.35}
+      },
+      "ogbn-papers100M": {
+        "Default DGL": {"gpu": 71240.3, "cpu": 422711.8, "total": 493952.1, "et": 11.09},
+        "BGL":         {"gpu": 44617.2, "cpu": 295948.2, "total": 340565.4, "et": 11.09},
+        "RapidGNN":    {"gpu": 35200.0, "cpu": 320800.0, "total": 356000.0, "et":  9.50},
+        "GreenDyGNN":  {"gpu": 34411.8, "cpu": 255905.3, "total": 290317.1, "et":  8.09}
+      }
+    }
+  },
+  "clean_kJ": {
+    "_note": "Total energy (GPU+CPU, all 4 nodes, 30 epochs) under no congestion at B=2000. Used by Figure 6.",
+    "ogbn-products":   {"Default DGL": 218.0, "BGL": 172.0, "RapidGNN": 180.0, "GreenDyGNN": 178.0},
+    "reddit":          {"Default DGL": 225.0, "BGL": 205.0, "RapidGNN": 182.0, "GreenDyGNN": 180.0},
+    "ogbn-papers100M": {"Default DGL": 302.0, "BGL": 232.0, "RapidGNN": 262.0, "GreenDyGNN": 258.0}
+  },
+  "ablation_kJ": {
+    "_note": "Total energy at B=2000 under congestion. Used by Figure 11 and Table II.",
+    "ogbn-products":   {"w/o RL": 218.9, "w/o Cost Weights": 210.0, "Full": 203.9},
+    "reddit":          {"w/o RL": 204.2, "w/o Cost Weights": 195.8, "Full": 189.4},
+    "ogbn-papers100M": {"w/o RL": 336.1, "w/o Cost Weights": 318.0, "Full": 307.2}
+  },
+  "convergence_B2000": {
+    "_note": "Per-method final accuracy (%) and wall time (s) under congestion at B=2000. Used by Figure 10.",
+    "ogbn-products":   {"final_acc": {"Default DGL": 83.9, "BGL": 84.9, "RapidGNN": 83.4, "GreenDyGNN": 84.8}, "wall_s": {"Default DGL": 150, "BGL": 151, "RapidGNN": 102, "GreenDyGNN": 100}},
+    "reddit":          {"final_acc": {"Default DGL": 88.0, "BGL": 91.3, "RapidGNN": 91.3, "GreenDyGNN": 90.8}, "wall_s": {"Default DGL": 227, "BGL": 227, "RapidGNN":  65, "GreenDyGNN":  62}},
+    "ogbn-papers100M": {"final_acc": {"Default DGL": 47.2, "BGL": 48.1, "RapidGNN": 49.5, "GreenDyGNN": 49.0}, "wall_s": {"Default DGL": 568, "BGL": 553, "RapidGNN": 422, "GreenDyGNN": 398}}
+  }
+}
