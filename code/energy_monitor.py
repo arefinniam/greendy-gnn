@@ -1,6 +1,5 @@
 import time
 import threading
-import subprocess
 from contextlib import contextmanager
 
 class AccurateEnergyMonitor:
@@ -153,7 +152,7 @@ class CPUEnergyMonitor:
                     try:
                         with open(name_path, 'r') as f:
                             domain_name = f.read().strip()
-                    except:
+                    except Exception:
                         domain_name = os.path.basename(os.path.dirname(path))
                 else:
                     domain_name = os.path.basename(os.path.dirname(path))
@@ -165,7 +164,7 @@ class CPUEnergyMonitor:
                     try:
                         with open(max_energy_path, 'r') as f:
                             max_energy = int(f.read().strip())
-                    except:
+                    except Exception:
                         pass
                 
                 # Validate domain returns actual energy data before adding

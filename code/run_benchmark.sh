@@ -84,19 +84,34 @@ CONG_IPS_FILE="$OUT_DIR/cong_ips.txt"
 printf '%s\n' "${IPS[@]:1}" > "$CONG_IPS_FILE"
 
 # ── Cluster cleanup primitives ──
-ssh_node() { ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 "$1" "$2" 2>/dev/null || true; }
+SSH_OPTS=(-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5)
+ssh_node() { ssh "${SSH_OPTS[@]}" "$1" "$2" 2>/dev/null || true; }
 
 kill_all_processes() {
-    local KILL='
-        pkill -9 -f "python3.*(train_|launch)" 2>/dev/null || true
-        pkill -9 -f "torch.distributed" 2>/dev/null || true
-        pkill -9 -f "dgl.distributed" 2>/dev/null || true
+    pkill -TERM -f "python3.*(train_|launch)" 2>/dev/null || true
+    pkill -TERM -f "torch.distributed" 2>/dev/null || true
+    pkill -TERM -f "dgl.distributed" 2>/dev/null || true
+    sleep 2
+    pkill -KILL -f "python3.*(train_|launch)" 2>/dev/null || true
+    pkill -KILL -f "torch.distributed" 2>/dev/null || true
+    pkill -KILL -f "dgl.distributed" 2>/dev/null || true
+    for p in 30050 30051 30052 30053 29500 29501; do
+        fuser -k -TERM ${p}/tcp 2>/dev/null || true
+    done
+
+    local REMOTE_KILL='
+        pkill -TERM -f "python3.*(train_|launch)" 2>/dev/null || true
+        pkill -TERM -f "torch.distributed" 2>/dev/null || true
+        pkill -TERM -f "dgl.distributed" 2>/dev/null || true
+        sleep 2
+        pkill -KILL -f "python3.*(train_|launch)" 2>/dev/null || true
+        pkill -KILL -f "torch.distributed" 2>/dev/null || true
+        pkill -KILL -f "dgl.distributed" 2>/dev/null || true
         for p in 30050 30051 30052 30053 29500 29501; do
-            fuser -k ${p}/tcp 2>/dev/null || true
+            fuser -k -TERM ${p}/tcp 2>/dev/null || true
         done
     '
-    eval "$KILL" 2>/dev/null || true
-    for ip in "${IPS[@]}"; do ssh_node "$ip" "$KILL"; done
+    for ip in "${IPS[@]}"; do ssh_node "$ip" "$REMOTE_KILL"; done
 }
 
 clear_congestion() {

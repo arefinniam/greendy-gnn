@@ -26,7 +26,6 @@ artifacts/
     launch.py              Vanilla DGL distributed launcher (upstream)
     congestion.py          tc netem driver (15-25 ms time-varying)
     parse_results.py       Log -> metrics.json
-    gen_figures.py         Reads ../data/paper_data.json -> ../figures/*.pdf
 
     run_benchmark.sh       Single entry-point benchmark driver
     kill_all.sh            Emergency cluster cleanup
@@ -41,7 +40,7 @@ artifacts/
 
 - 4-node cluster connected via 25 Gbps Ethernet
 - Each node: Intel Xeon CPU (RAPL), one NVIDIA GPU (P100 or newer with NVML),
-  Linux with `tc netem`, passwordless SSH between nodes, sudo for `tc`
+  Linux with `tc netem`, SSH key authentication between nodes, sudo for `tc`
 - Reported runs: Chameleon Cloud bare-metal nodes
 
 ## Software
@@ -52,32 +51,26 @@ artifacts/
 | PyTorch    | 2.0+    | pytorch.org                               |
 | DGL        | 1.1+    | dgl.ai (distributed mode)                 |
 | pynvml     | 11.5+   | PyPI                                      |
-| matplotlib | 3.7+    | PyPI                                      |
 | METIS      | 5.1     | github.com/KarypisLab/METIS               |
 
 ## Reproducing the paper
 
-### Quick path — figures only (no cluster needed)
+### Quick path — inspect archived results (no cluster needed)
 
-```bash
-cd code
-python3 gen_figures.py
-# writes 8 PDFs to ../figures/
-```
-
-This regenerates every paper figure (Fig. 4-11) from the archived
-measurements in `data/paper_data.json`.
+The `figures/` directory contains the generated PDF figures from the archived
+measurements in `data/paper_data.json`. This path supports artifact inspection
+without requiring access to the 4-node cluster.
 
 ### Full path — re-run the benchmark on a 4-node cluster
 
 1. **Provision** 4 GPU nodes (e.g., Chameleon Cloud bare metal) and configure
-   passwordless SSH between them.
+   SSH key authentication between them.
 
 2. **Install** the software stack on every node:
    ```bash
    conda create -n greendygnn python=3.10 -y
    conda activate greendygnn
-   pip install torch dgl pynvml matplotlib numpy
+   pip install torch dgl pynvml numpy
    ```
 
 3. **Partition** the three datasets with METIS into 4 parts and place them on
@@ -103,11 +96,9 @@ measurements in `data/paper_data.json`.
    ```
    Per-run logs land in `code/logs/benchmark_<timestamp>/<method>/<dataset>/B<batch>/`.
 
-6. **Re-generate** the figures from the new data (after updating
-   `data/paper_data.json` with the parsed results):
-   ```bash
-   python3 gen_figures.py
-   ```
+6. **Analyze** the generated `metrics.json` files and compare the aggregate
+   energy, runtime, convergence, and cache metrics with the archived
+   measurements in `data/paper_data.json` and the reference PDFs in `figures/`.
 
 ## Run-time
 
@@ -116,7 +107,6 @@ measurements in `data/paper_data.json`.
 | Setup (install + partition)   | ~60 min                       |
 | Congestion benchmark (36 runs)| ~180 min on P100-class GPUs   |
 | Clean benchmark (36 runs)     | ~150 min                      |
-| Figure generation             | < 10 s                        |
 
 ## Selective runs
 
@@ -139,8 +129,3 @@ python3 train_greendygnn.py --no_cost_weights    # uniform allocation
 | OGBN-Papers100M   | 111 M  | 1.6 B  | 128      | 172     |
 
 All three are from the Open Graph Benchmark (https://ogb.stanford.edu).
-
-## Archival note
-
-For the SC26 artifact-freeze stage, create a DOI-backed release of this
-repository through Zenodo, FigShare, Dryad, or another DOI-providing archive.

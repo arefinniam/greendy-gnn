@@ -102,7 +102,9 @@ def main(args):
     gpu_mon.stop(); cpu_mon.stop()
     gj = gpu_mon.get_total_gpu_energy()
     cj = cpu_mon.get_total_cpu_energy()
-    print(f"Part {pid}: Total GPU energy: {gj:.2f}J CPU: {cj:.2f}J")
+    print(f"Part {pid}: Total GPU energy consumed: {gj:.2f}J")
+    print(f"Part {pid}: Total CPU energy consumed: {cj:.2f}J")
+    print(f"Part {pid}: Total energy consumed: {gj + cj:.2f}J")
     profiler.save()
 
 

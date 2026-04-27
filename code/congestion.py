@@ -10,16 +10,31 @@ pass the remaining P-1 IPs to this driver.
 import argparse, os, re, subprocess, sys, time
 
 DGL_PORT = 30050
+SAFE_VALUE = re.compile(r"^[A-Za-z0-9_.:-]+$")
+SSH_OPTS = [
+    "ssh",
+    "-o", "BatchMode=yes",
+    "-o", "StrictHostKeyChecking=accept-new",
+    "-o", "ConnectTimeout=5",
+]
+
+
+def validate_safe_value(value, label):
+    if not SAFE_VALUE.match(value):
+        raise ValueError(f"Unsafe {label}: {value!r}")
+    return value
 
 
 def ssh(ip, cmd, timeout=15):
+    validate_safe_value(ip, "host")
     r = subprocess.run(
-        f"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 {ip} '{cmd}'",
-        shell=True, capture_output=True, timeout=timeout, text=True)
+        SSH_OPTS + [ip, cmd],
+        capture_output=True, timeout=timeout, text=True)
     return r.returncode == 0, r.stdout + r.stderr
 
 
 def apply_delay(ip, iface, ms):
+    validate_safe_value(iface, "network interface")
     if ms <= 0:
         return remove_delay(ip, iface)
     ssh(ip, f"sudo tc qdisc del dev {iface} root 2>/dev/null; "
@@ -30,6 +45,7 @@ def apply_delay(ip, iface, ms):
 
 
 def remove_delay(ip, iface):
+    validate_safe_value(iface, "network interface")
     ssh(ip, f"sudo tc qdisc del dev {iface} root 2>/dev/null || true")
 
 

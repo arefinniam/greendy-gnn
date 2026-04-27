@@ -1,13 +1,12 @@
 import torch as th
-import time
 import threading
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
 
 def select_hot_nodes(freq_tensor: th.Tensor, n_hot: int, **kwargs) -> th.Tensor:
-    nonzero = freq_tensor > 0
-    idxs = th.nonzero(nonzero).squeeze()
-    if idxs.numel() == 0: return th.empty(0, dtype=th.long)
+    idxs = th.nonzero(freq_tensor > 0, as_tuple=True)[0]
+    if idxs.numel() == 0:
+        return th.empty(0, dtype=th.long, device=freq_tensor.device)
     
     scores = freq_tensor[idxs].float()
     k = min(n_hot, idxs.numel())

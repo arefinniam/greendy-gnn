@@ -14,6 +14,17 @@ from functools import partial
 from threading import Thread
 from typing import Optional
 
+SSH_OPTS = [
+    "ssh",
+    "-o", "BatchMode=yes",
+    "-o", "StrictHostKeyChecking=accept-new",
+]
+
+
+def ssh_command(ip, port, cmd, username=""):
+    target = f"{username}@{ip}" if username else ip
+    return SSH_OPTS + ["-p", str(port), target, cmd]
+
 
 def cleanup_proc(get_all_remote_pids, conn):
     """This process tries to clean up the remote training tasks."""
@@ -43,14 +54,7 @@ def kill_process(ip, port, pids):
     for pid in pids:
         assert curr_pid != pid
         print("kill process {} on {}:{}".format(pid, ip, port), flush=True)
-        kill_cmd = (
-            "ssh -o StrictHostKeyChecking=no -p "
-            + str(port)
-            + " "
-            + ip
-            + " 'kill {}'".format(pid)
-        )
-        subprocess.run(kill_cmd, shell=True)
+        subprocess.run(ssh_command(ip, port, "kill {}".format(pid)))
         killed_pids.append(pid)
     # It's possible that some of the processes are not killed. Let's try again.
     for i in range(3):
@@ -63,28 +67,18 @@ def kill_process(ip, port, pids):
                 print(
                     "kill process {} on {}:{}".format(pid, ip, port), flush=True
                 )
-                kill_cmd = (
-                    "ssh -o StrictHostKeyChecking=no -p "
-                    + str(port)
-                    + " "
-                    + ip
-                    + " 'kill -9 {}'".format(pid)
-                )
-                subprocess.run(kill_cmd, shell=True)
+                subprocess.run(ssh_command(ip, port, "kill -KILL {}".format(pid)))
 
 
 def get_killed_pids(ip, port, killed_pids):
     """Get the process IDs that we want to kill but are still alive."""
+    if not killed_pids:
+        return []
     killed_pids = [str(pid) for pid in killed_pids]
     killed_pids = ",".join(killed_pids)
-    ps_cmd = (
-        "ssh -o StrictHostKeyChecking=no -p "
-        + str(port)
-        + " "
-        + ip
-        + " 'ps -p {} -h'".format(killed_pids)
-    )
-    res = subprocess.run(ps_cmd, shell=True, stdout=subprocess.PIPE)
+    res = subprocess.run(
+        ssh_command(ip, port, "ps -p {} -h".format(killed_pids)),
+        stdout=subprocess.PIPE)
     pids = []
     for p in res.stdout.decode("utf-8").split("\n"):
         l = p.split()
@@ -115,22 +109,13 @@ def execute_remote(
         thread: The Thread whose run() is to run the `cmd` on the remote host. Returns when the cmd completes
             on the remote host.
     """
-    ip_prefix = ""
-    if username:
-        ip_prefix += "{username}@".format(username=username)
-
-    # Construct ssh command that executes `cmd` on the remote host
-    ssh_cmd = "ssh -o StrictHostKeyChecking=no -p {port} {ip_prefix}{ip} '{cmd}'".format(
-        port=str(port),
-        ip_prefix=ip_prefix,
-        ip=ip,
-        cmd=cmd,
-    )
+    # Construct ssh command that executes `cmd` on the remote host.
+    ssh_cmd = ssh_command(ip, port, cmd, username=username)
 
     # thread func to run the job
     def run(ssh_cmd, state_q):
         try:
-            subprocess.check_call(ssh_cmd, shell=True)
+            subprocess.check_call(ssh_cmd)
             state_q.put(0)
         except subprocess.CalledProcessError as err:
             print(f"Called process error {err}")
@@ -145,7 +130,7 @@ def execute_remote(
             state_q,
         ),
     )
-    thread.setDaemon(True)
+    thread.daemon = True
     thread.start()
     # sleep for a while in case of ssh is rejected by peer due to busy connection
     time.sleep(0.2)
@@ -157,14 +142,9 @@ def get_remote_pids(ip, port, cmd_regex):
     pids = []
     curr_pid = os.getpid()
     # Here we want to get the python processes. We may get some ssh processes, so we should filter them out.
-    ps_cmd = (
-        "ssh -o StrictHostKeyChecking=no -p "
-        + str(port)
-        + " "
-        + ip
-        + " 'ps -aux | grep python | grep -v StrictHostKeyChecking'"
-    )
-    res = subprocess.run(ps_cmd, shell=True, stdout=subprocess.PIPE)
+    res = subprocess.run(
+        ssh_command(ip, port, "ps -aux | grep python | grep -v StrictHostKeyChecking"),
+        stdout=subprocess.PIPE)
     for p in res.stdout.decode("utf-8").split("\n"):
         l = p.split()
         if len(l) < 2:
@@ -175,14 +155,11 @@ def get_remote_pids(ip, port, cmd_regex):
             pids.append(l[1])
 
     pid_str = ",".join([str(pid) for pid in pids])
-    ps_cmd = (
-        "ssh -o StrictHostKeyChecking=no -p "
-        + str(port)
-        + " "
-        + ip
-        + " 'pgrep -P {}'".format(pid_str)
-    )
-    res = subprocess.run(ps_cmd, shell=True, stdout=subprocess.PIPE)
+    if not pid_str:
+        return []
+    res = subprocess.run(
+        ssh_command(ip, port, "pgrep -P {}".format(pid_str)),
+        stdout=subprocess.PIPE)
     pids1 = res.stdout.decode("utf-8").split("\n")
     all_pids = []
     for pid in set(pids + pids1):
@@ -492,12 +469,11 @@ def get_available_port(ip):
     """Get available port with specified ip."""
     import socket
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for port in range(1234, 65535):
-        try:
-            sock.connect((ip, port))
-        except:
-            return port
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(0.2)
+            if sock.connect_ex((ip, port)) != 0:
+                return port
     raise RuntimeError("Failed to get available port for ip~{}".format(ip))
 
 
@@ -661,15 +637,13 @@ def main():
         "--ssh_username",
         default="",
         help="Optional. When issuing commands (via ssh) to cluster, use the provided username in the ssh cmd. "
-        "Example: If you provide --ssh_username=bob, then the ssh command will be like: 'ssh bob@1.2.3.4 CMD' "
-        "instead of 'ssh 1.2.3.4 CMD'",
+        "Example: If you provide --ssh_username=bob, then the ssh command will be like: 'ssh bob@192.0.2.1 CMD' "
+        "instead of 'ssh 192.0.2.1 CMD'",
     )
     parser.add_argument(
         "--workspace",
         type=str,
-        help="Path of user directory of distributed tasks. \
-                        This is used to specify a destination location where \
-                        the contents of current directory will be rsyncd",
+        help="Path to the shared working directory used by distributed tasks.",
     )
     parser.add_argument(
         "--num_trainers",

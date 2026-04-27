@@ -63,6 +63,16 @@ def parse_log(log_path):
             })
             continue
 
+        # Trainer format: "Part {rank} Ep{epoch}: {time}s GPU=..."
+        m = re.search(r"Part (\d+) Ep(?:och)?\s*(\d+):\s*([\d.]+)s", line)
+        if m:
+            metrics["epochs"].append({
+                "part": int(m.group(1)),
+                "epoch": int(m.group(2)),
+                "time_s": float(m.group(3)),
+            })
+            continue
+
         # Also match "Part {rank}, Epoch Time(s): {val}" format (default.py)
         m = re.search(r"Part (\d+), Epoch Time\(s\): ([\d.]+)", line)
         if m:
