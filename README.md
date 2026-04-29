@@ -47,8 +47,7 @@ results/                 Reproduction outputs (created by run_benchmark.sh)
 - 4-node cluster connected via 25 Gbps Ethernet
 - Each node: Intel Xeon CPU (RAPL), one NVIDIA GPU (P100 or newer with NVML),
   Linux with `tc netem`, SSH key authentication between nodes, sudo for `tc`
-- Reported runs: Chameleon Cloud bare-metal nodes with 2 P100 GPUs per node;
-  the artifact uses 1 GPU per node, matching the paper experiments.
+- Reported runs: Chameleon Cloud bare-metal nodes with 2 P100 GPUs per node.
 
 ## Software
 
